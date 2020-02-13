@@ -1,0 +1,204 @@
+
+SEQUENCE initElevator(elevator)
+   if time between 7 am and 11 am then
+     
+             
+                call move with 0
+                set elevator.direction to up
+                set elevator.status to free
+
+
+  else if  time between 2 pm and 8 pm then
+
+                call move with 9
+                set elevator.direction to down
+                set elevator.status set free
+      endif
+  else    
+
+         case elevator.direction of
+         
+              up :
+             
+              if elevator.floor < 10 then 
+                call move with 10
+              endif
+                set elevator.direction to down
+                set elevator.status set free
+
+             down :
+
+              if elevator.floor > 0 then 
+                call move with 0
+              endif
+               set elevator.direction to up
+                set elevator.status set free
+
+          endcase
+           
+  endif
+
+endsequence
+
+SEQUENCE moveElevator(elevator)
+
+  WHILE i < elevator.ArrayDestination 
+        
+        call move with elevator.ArrayDestination.floor
+        call stop with elevator.ArrayDestination.floor
+        call openDoor
+
+        if floorrRequestcallButtons is true then
+
+            addByOrder floorrRequestcallButtons.destination TO  elevator.ArrayDestination
+
+             
+
+        endif
+        call clooseDoor
+        increment i
+        
+  ENDWHILE
+
+      call initElevator with elevator
+
+endsequence
+
+
+
+
+
+
+
+
+SEQUENCE searchElevator (callButton) 
+
+    case callButton.direction of
+               
+               up :
+                    if elevator1.direction = callButton.direction and elevator2.direction = callButton.direction and callButton.floor >= elevator1.floor and callButton.floor >= elevator2.floor then
+                         
+                          if bestPosition() is elevator1 then 
+                                increment scoreElevator1
+
+                          else  
+                                increment scoreElevator2 
+                          endif
+                          
+                          if   the lenght OF elevator1.ArrayDestination < the lenght of elevator2.ArrayDestination then 
+                              increment scoreElevator1
+
+                          else 
+                              increment scoreElevator2 
+                          endif
+
+                          if scoreElevator1 > scoreElevator2 then 
+                             return elevator1
+                          else
+                             return elevator2
+                          
+                          endif 
+
+                         
+
+                    endif
+
+
+                     if elevator1.direction = callButton.direction and callButton.floor >= elevator1.floor then
+
+                               return elevator1
+                    endif
+
+                     if  elevator2.direction = callButton.direction and callButton.floor >= elevator2.floor then
+
+                                return elevator2
+                    endif
+                    if elevator1.status = free and elevator1.direction = up then
+                          set elevator1.direction to down
+                          set elevator1.status to busy
+                          return elevator1
+                   endif
+                   if elevator2.status = free and elevator2.direction = up then
+                          set elevator2.direction to down
+                          set elevator2.status to busy
+                          return elevator2
+                   endif       
+
+           down : 
+
+                    if elevator1.direction = callButton.direction and elevator2.direction = callButton.direction and callButton.floor <= elevator1.floor and callButton.floor <= elevator2.floor then
+                         
+                          if bestPosition() is elevator1 then 
+                                increment scoreElevator1
+
+                          else  
+                                increment scoreElevator2 
+                          endif
+                          
+                          if the lenght OF elevator1.ArrayDestination < the lenght OF elevator2.ArrayDestination then 
+                              increment scoreElevator1
+
+                          else 
+                              increment scoreElevator2 
+                          endif
+                          if scoreElevator1 > scoreElevator2 then 
+                             return elevator1
+                          else
+                             return elevator2
+                          
+                          endif  
+                          
+
+                    endif
+
+                    if elevator1.direction = callButton.direction and callButton.floor <= elevator1.floor then
+
+                               return elevator1
+                    endif
+
+                     if  elevator2.direction = callButton.direction and callButton.floor <= elevator2.floor then
+
+                                return elevator2
+                    endif
+                   if  elevator1.status is free and  elevator1.direction is down then
+                          SET elevator1.direction TO up
+                          SET elevator1.status TO busy
+                          return elevator1
+                   endif
+                    if    elevator2.status is free and  elevator2.direction is down then
+                          SET elevator2.direction TO up
+                          SET elevator2.status TO busy
+                          return elevator2   
+                  endif                        
+    endcase
+         
+         call searchElevator with callButton 
+
+
+endsequence
+
+SEQUENCE controllerRequest(callButton)
+
+         while callButton is on 
+
+    
+
+            CALL searchElevator with callButton RETURNING elevator
+          
+           addByOrder callButton.floo to elevator.ArrayDestination
+
+          ENDWHILE
+          IF the lenght of elevator1.ArrayDestination  > 0 then 
+
+             call moveElevator with elevator1
+
+          endif
+          IF the lenght of elevator2.ArrayDestination > 0 then 
+
+             call moveElevator with elevator2
+
+          endif
+
+
+
+endsequence
