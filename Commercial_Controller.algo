@@ -1,0 +1,356 @@
+
+
+
+init callButton[66] {
+      status : null
+      floor : null
+      direction : null
+
+}
+
+
+init  elevator[3] {
+      Floor : CurrentFloor
+      direction : up
+      ArrayDestination : array[7]
+      status : free
+      
+      
+}
+init colonnes[4]{
+      elevator : elevator[3]
+      firstFloor : null
+      lastFloor : null 
+}
+init floorRequestcallButtons[66]{
+      status : null
+      destination : null
+}
+
+SEQUENCE checkcallButton
+   set i to -5
+   for i to 60
+         if callButton[i].status = on then
+         
+            return callButton[i]
+             
+         endif
+   endfor
+
+
+endsequence
+
+
+SEQUENCE refreshfloorRequestButtons  (floor)   
+          
+      set floorRequestcallButtons[floor].status to null      
+      set floorRequestcallButtons[floor].destination to null
+
+
+endsequence
+
+
+
+
+
+SEQUENCE refreshElevator(elevator , colonneNb)
+
+/'///////////------------in the morning -----------------////////
+   if time between 7 am and 11 am then
+     
+             
+                call move with 1
+                set elevator.direction to up
+                set elevator.status to free
+
+  '/////// --------------------in the evening------------------------//////
+  else if  time between 2 pm and 8 pm then
+
+                call move with colonnes[colonneNb].lastFloor
+                set elevator.direction to down
+                set elevator.status set free
+      endif
+     '' /////////----------------in the rest day ---------------------//////////
+  else    
+
+         case elevator.direction of
+         
+              up :
+             
+              if elevator.floor < colonnes[colonneNb].lastFloor then 
+                call move with colonnes[colonneNb].lastFloor
+              endif
+                set elevator to colonnes[colonneNb].lastFloor
+                set elevator.direction to down
+                set elevator.status to free
+
+             down :
+
+              if elevator.floor > colonnes[colonneNb].firstFloor then 
+                call move with colonnes[colonneNb].firstFloor
+              endif
+                set elevator to colonnes[colonneNb].firstFloor
+                set elevator.direction to up
+                set elevator.status set free
+
+          endcase
+           
+  endif
+   init elevator.ArrayDestination
+endsequence
+
+SEQUENCE startElevator(elevator)
+  SET i to 0 
+    '---------------------------------------------browse the list of requests to make-------------------------'
+
+  WHILE i < elevator.ArrayDestination 
+        
+        call move with elevator.ArrayDestination[i].floor
+        call stop with elevator.ArrayDestination[i].floor
+        call openDoor
+        '--------------------------------------callfor go up or down but press destination number is wrong-------------------------
+        case elevator.direction for
+              up :
+                     if floorRequestcallButtons[elevator.ArrayDestination[i].floor].status is on  and  floorRequestcallButtons[elevator.ArrayDestination[i].floor].floor > floorRequestcallButtons[elevator.ArrayDestination[i].floor].destination then
+
+                         addByOrder floorRequestcallButtons.destination TO  elevator.ArrayDestination
+                         call refreshfloorRequestButtons  with elevator.ArrayDestination[i].floor
+                    endif
+                    
+              down :
+                  if floorRequestcallButtons[elevator.ArrayDestination[i].floor].status is on  and  floorRequestcallButtons[elevator.ArrayDestination[i].floor].floor < floorRequestcallButtons[elevator.ArrayDestination[i].floor].destination then
+
+                         addByOrder floorRequestcallButtons.destination TO  elevator.ArrayDestination
+                         call refreshfloorRequestButtons  with elevator.ArrayDestination[i].floor
+                  endif
+
+
+          endcase
+
+        call clooseDoor
+        increment i
+        
+  ENDWHILE
+'-------------------------------------------------------when the list is finished initial it ----------------'
+      call refreshElevator with elevator
+
+endsequence
+
+
+
+
+
+-'------------------------------------find an elevator it depends on several criteria toload a request------------------------------------------
+
+
+SEQUENCE searchElevator (callButton , colonneNb) 
+
+
+          --------------------------------
+           if time between 7 am and 11 am and callButton.floor=1  then
+               for i to 4
+                 for j to 3
+                      if colonnes[i].elevator[j].status is free then 
+                      set colonnes[i].elevator[j].status to busy
+                      set colonnes[i].elevator[j].direction to callButton.direction
+                       return colonnes[i].elevator[j]
+                endfor    
+              endfor
+              
+          endif
+
+    case callButton.direction of
+               
+               up :
+
+                       ------------------------------- challenge-------------------------------------
+                        
+                    if at least two elevator the same direction with the request and and the floor of the request  before  then a challenge will be launched then
+                         
+                         -'-------------------------------challenge elemenation -------------------------
+                              if colonnes[colonneNb].elevator[1].dirction is down then
+                               
+                               set scoreElevator1 to -10
+                              
+                              endif
+                              if colonnes[colonneNb].elevator[2].dirction is down then
+                               
+                                set scoreElevator2 to -10
+                              
+                              endif
+                              if colonnes[colonneNb].elevator[3].dirction is down then
+                               
+                               set scoreElevator3 to -10
+                              
+                              endif
+                         
+                         
+                         
+                         '---------------------------------------challenge distance------------------------------
+
+                          if bestPosition() is colonnes[colonneNb].elevator[1] then 
+                                increment  scoreElevator1 
+                          endif
+                           if   bestPosition() is colonnes[colonneNb].elevator[2]
+                                   increment  scoreElevator2
+                           endif
+                            if   bestPosition() is colonnes[colonneNb].elevator[3]
+                                     increment  scoreElevator3
+                           endif      
+                          
+                             '---------------------------------------challenge the lenght OF elevator.ArrayDestination ------------------------------
+
+
+                          if the lenght OF colonnes[colonneNb].elevator.ArrayDestination is colonnes[colonneNb].elevator[1] then 
+                                increment  scoreElevator1 
+
+                          else if  the lenght OF colonnes[colonneNb].elevator.ArrayDestination is colonnes[colonneNb].elevator[2] 
+                                   increment  scoreElevator2
+                               else    
+                                     increment  scoreElevator3
+                               endif      
+                          endif
+
+                          '--------------------------return the best elevator from score -------------------------------
+                          
+                          
+                             return bestscoreElevator()
+                         
+
+                    endif
+
+                                          '-----------------------------------if there is only one who has the same direction and his list is not full-----------------
+
+                    if colonnes[colonneNb].elevator[1].direction = callButton.direction and callButton.floor <= colonnes[colonneNb].elevator[1].floor and colonnes[colonneNb].elevator[1].ArrayDestination < 10 then
+
+                               return colonnes[colonneNb].elevator[1]
+                    endif
+
+                     if  colonnes[colonneNb].elevator[2].direction = callButton.direction and callButton.floor <= colonnes[colonneNb].elevator[2].floor and colonnes[colonneNb].elevator[2].ArrayDestination < 10 then
+
+                                return colonnes[colonneNb].elevator[2]
+                    endif
+                    if  colonnes[colonneNb].elevator[3].direction = callButton.direction and callButton.floor <= colonnes[colonneNb].elevator[3].floor and colonnes[colonneNb].elevator[3].ArrayDestination < 10 then
+
+                                return colonnes[colonneNb].elevator[3]
+                    endif
+                          
+
+           down : 
+
+                    if at least two elevator the same direction withthe request and and the floor of the request  before  then a challenge will be launchedr then
+                         '////---------------------------------------challenge distance------------------------------///////
+
+
+                          if bestPosition() is colonnes[colonneNb].elevator[1] then 
+                                increment  scoreElevator1 
+
+                          else if   bestPosition() is colonnes[colonneNb].elevator[2]
+                                   increment  scoreElevator2
+                               else    
+                                     increment  scoreElevator3
+                               endif      
+                          endif
+
+                             '/////    ---------------------------------------challenge the lenght OF elevator.ArrayDestination ------------------------------/////
+
+
+                          if the lenght OF colonnes[colonneNb].elevator.ArrayDestination is colonnes[colonneNb].elevator[1] then 
+                                increment  scoreElevator1 
+
+                          else if  the lenght OF colonnes[colonneNb].elevator.ArrayDestination is colonnes[colonneNb].elevator[2] 
+                                   increment  scoreElevator2
+                               else    
+                                     increment  scoreElevator3
+                               endif      
+                          endif
+
+                          '///--------------------------return the best elevator from score -------------------------------///
+                          
+                          
+                             return bestElevator()
+                           
+                          
+
+                    endif 
+                    '////-----------------------------------if there is only one who has the same direction-----------------////
+
+                    if colonnes[colonneNb].elevator[1].direction = callButton.direction and callButton.floor <= colonnes[colonneNb].elevator[1].floor and colonnes[colonneNb].elevator[1].ArrayDestination < 10 then
+
+                               return colonnes[colonneNb].elevator[1]
+                    endif
+
+                     if  colonnes[colonneNb].elevator[2].direction = callButton.direction and callButton.floor <= colonnes[colonneNb].elevator[2].floor and colonnes[colonneNb].elevator[2].ArrayDestination < 10 then
+
+                                return colonnes[colonneNb].elevator[2]
+                    endif
+                    if  colonnes[colonneNb].elevator[3].direction = callButton.direction and callButton.floor <= colonnes[colonneNb].elevator[3].floor and colonnes[colonneNb].elevator[3].ArrayDestination < 10 then
+
+                                return colonnes[colonneNb].elevator[3]
+                    endif
+                                         
+    endcase
+        '--------------------------if no elevator have the some dirction with the callbutton---------------------------
+      if colonnes[colonneNb].elevator[1].status is free then 
+                set colonnes[colonneNb].elevator[1].status to busy
+                set colonnes[colonneNb].elevator[1].direction to callButton.direction
+                set colonnes[colonneNb].elevator[1].floor to callButton.floor
+                return colonnes[colonneNb].elevator[1]
+      else if colonnes[colonneNb].elevator[2].status is free then 
+                set colonnes[colonneNb].elevator[2].status to busy
+                set colonnes[colonneNb].elevator[2].direction to callButton.direction
+                return colonnes[colonneNb].elevator[2]
+            else if colonnes[colonneNb].elevator[3].status is free then 
+                set colonnes[colonneNb].elevator[3].status to busy
+                set colonnes[colonneNb].elevator[3].direction to callButton.direction
+                return colonnes[colonneNb].elevator[3]
+
+            endif
+      endif
+         '' -------------------------method recursive if he hasn t found the case-------------------------------
+         call searchElevator with callButton 
+
+endsequence
+
+SEQUENCE controllerRequest(callButton  , colonneNb) 
+
+                     CALL searchElevator with callButton and colonneNb RETURNING elevator
+          
+                     addByOrder callButton.floor to elevator.ArrayDestination
+
+endsequence
+
+
+SEQUENCE Batterie()
+       while Batterie is on
+
+           '' -----------------------------choose a colonne controller  depends on the interval ------------------------------
+             call checkcallButton RETURNING callButton
+           
+            if callButton.floor => -5 and callButton.floor <= -0 then
+              call controllerRequest with callButton and 1
+            endif
+            if callButton.floor => 1 and callButton.floor <= 20 then
+              call controllerRequest with callButton and 2
+            endif
+            if callButton.floor => 21 and callButton.floor <= 40 then
+              call controllerRequest with callButton and 3
+            endif
+            if callButton.floor => 41 and callButton.floor <= 60 then
+              call controllerRequest with callButton and 4
+            endif
+
+            
+            '---------------------- start elevators ---------------------------------------------------
+            for i to 4
+                 for j to 3
+                      IF the lenght of colonnes[i].elevator[j].ArrayDestination  > 0 then 
+
+                            call startElevator with colonnes[i].elevator[j]
+
+                     endif
+                endfor    
+           endfor
+       ENDWHILE
+endsequence
+
