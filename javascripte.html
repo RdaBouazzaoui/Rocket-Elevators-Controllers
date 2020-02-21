@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Rocket Elevators</title>
+		
+    </head>
+    <body  >
+        <div>
+        <div class="btn-group_up" style="float:left;">
+            <button class="click_Button1"  onclick="b1()"  type="UP" value="1"  style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button2"  onclick="b2()"  type="UP"  value="2" style="width : 140PX;">UP&nbsp;&nbsp; </button><br><br><br>
+            <button class="click_Button3"  onclick="b3()"  type="UP"  value="3" style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button4"   onclick="b4()" type="UP"  value="4" style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button5"   onclick="b5()" type="UP"  value="5" style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button6"   onclick="b6()" type="UP"  value="6" style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button7"   onclick="b7()" type="UP"  value="7" style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button8"   onclick="b8()" type="UP"  value="8" style="width : 140PX;">UP&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button9"   onclick="b9()" type="UP"  value="9" style="width : 140PX;">UP&nbsp;&nbsp; </button><br><br><br>
+            <button class="click_Button10"   onclick="" type="UP"  value="10" style="width : 140PX;">&nbsp;&nbsp;</button><br><br><br>
+        </div>
+        <div class="btn-group_down"style="float:left;" >
+            <button class="click_Button11"   onclick="" type="DOWN" value="1" style="width : 140PX;">&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button12"   onclick="b12()"  type="DOWN" value="2"  style="width : 140PX;">DOWN&nbsp;&nbsp; </button><br><br><br>
+            <button class="click_Button13"   onclick="b13()" type="DOWN"  value="3" style="width : 140PX;">UDOWN&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button14"   onclick="b14()" type="DOWN" value="4" style="width : 140PX;">DOWN&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button15"  onclick="b15()"  type="DOWN" value="5" style="width : 140PX;">DOWN&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button16"   onclick="b16()" type="DOWN" value="6" style="width : 140PX;">DOWN&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button17"   onclick="b17()" type="DOWN" value="7" style="width : 140PX;">DOWN&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button18"   onclick="b18()" type="DOWN" value="8" style="width : 140PX;">DOWN&nbsp;&nbsp;</button><br><br><br>
+            <button class="click_Button19"   onclick="b19()" type="DOWN" value="9" style="width : 140PX;">DOWN&nbsp;&nbsp; </button><br><br><br>
+            <button class="click_Button20"   onclick="b20()"  type="DOWN" value="10" style="width : 140PX;">DOWN&nbsp;&nbsp;</button><br><br><br>
+        </div>
+        <div>
+
+        
+     
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+     <script>
+
+
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ///////////////////////////////          global statement                                                   / ///////////////////////////////
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
+     var Batterie = "on";
+     var callButtonList = [];
+     
+
+     var floorRequestcallButtons =null;
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     //////////////////////////////////                            object elevator                               ////////////////////////////////
+     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     var elevator = function(id,floor,direction,status){
+        this.Id = id;
+        this.Floor = floor;
+        this.direction = direction;
+        this.ArrayDestination = new Array();
+        this.status = status;
+        
+
+         };
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+          //////////////////////                        method addbyorder elevator destination                              ////////////////////
+          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         elevator.prototype.addByOrder = function(callButtonFloor){
+                                 /////////////// local  statement //////////////
+                   var array = [];
+                   var i=0;
+                   var j=0;
+                   var k=0;
+                  
+                    console.log(" elevator direction  :"+this.direction);
+                     
+                   while(i < this.ArrayDestination.length){
+                        ////////////////////growing sort/////////////////////
+                      if(this.direction == "UP" ){
+                        if(callButtonFloor < this.ArrayDestination[i] && j==i){array[j]=callButtonFloor;j++;}
+
+                        array[j]=this.ArrayDestination[i];
+
+                        j++;
+                        i++;
+                      }
+                      //////////////////////////////decreasing sort////////////////////
+                      if(this.direction == "UP" ){
+                        if(callButtonFloor > this.ArrayDestination[k] && k==j){array[j]=callButtonFloor;j++;}
+
+                         array[j]=this.ArrayDestination[k];
+
+                          j++;
+                          k++;
+
+                      }
+
+                   }
+
+                   if(i==j){array[j]=callButtonFloor;}
+                   if(i==0 && j==0){array[0]=callButtonFloor;}
+                   this.ArrayDestination=array;
+
+
+         };
+
+         elevator.prototype.refreshElevator = function(){
+
+          var list = new Array();
+           
+           
+            
+         for(var i=1; i < this.ArrayDestination.length ; i++){
+             list[i]=this.ArrayDestination[i];
+            
+
+         }
+        
+        this.ArrayDestination=list;
+
+         }
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         //////////////////////////////        when elevator move ,change the floor to elevator                                           ///////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         elevator.prototype.move = function(floor){
+                   this.Floor=floor;
+
+         }
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         ///////////////////////        when elevator stop, delete floor to his list      ///////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         elevator.prototype.stop = function(floor){
+                     elevator.refreshElevator(elevator);
+         }
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         /////////                             when elevator open door ,check request button is pressed                           ///////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         elevator.prototype.openDoor = function(floor){
+                     elevator.refreshElevator(elevator);
+         }
+
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ///////////////////////////////global statement//////////////////////////////////////////////////////////////////////////////////////
+     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     var elevator1 =new elevator(1,5,"UP","busy");
+     var elevator2 =new elevator(2,1,"UP","free");
+     console.log(elevator1);
+
+    
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+////////////////////                 when someone makes a request the controller will start and the request save as a list        ////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function b1() {
+          
+                      callButtonList.push($(".click_Button1"));
+                      controllerRequest();
+ 
+
+ 
+          
+     }
+function b2() {
+                         callButtonList.push($(".click_Button2"));
+                         controllerRequest();
+ 
+       }         
+function b3() {
+          
+                         callButtonList.push($(".click_Button3"));
+                         controllerRequest();
+
+
+}
+function b4() {
+          
+                          callButtonList.push($(".click_Button4"));
+                          controllerRequest();
+
+} 
+function b5() {
+          
+                          callButtonList.push($(".click_Button5"));
+                          controllerRequest();
+
+  }
+function b6() {
+
+                          callButtonList.push($(".click_Button6"));
+                          controllerRequest();
+ }
+ function b7() {
+
+                           callButtonList.push($(".click_Button7"));
+                           controllerRequest();
+}
+function b8() {
+
+                           callButtonList.push($(".click_Button8"));
+                           controllerRequest();
+}
+function b9() {
+
+                            callButtonList.push($(".click_Button9"));
+                            controllerRequest();
+}
+
+
+ function b12() {
+
+callButtonList.push($(".click_Button12"));
+controllerRequest();
+}
+function b13() {
+
+callButtonList.push($(".click_Button13"));
+controllerRequest();
+}
+function b14() {
+
+callButtonList.push($(".click_Button14"));
+controllerRequest();
+}
+function b15() {
+          
+callButtonList.push($(".click_Button15"));
+controllerRequest();
+}
+function b16() {
+
+callButtonList.push($(".click_Button16"));
+controllerRequest();
+ }
+ function b17() {
+
+callButtonList.push($(".click_Button17"));
+controllerRequest();
+}
+function b18() {
+
+callButtonList.push($(".click_Button18"));
+controllerRequest();
+}
+function b19() {
+
+callButtonList.push($(".click_Button19"));
+controllerRequest();
+} 
+function b20() {
+          
+          callButtonList.push($(".click_Button20"));
+          controllerRequest();
+
+} 
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////when controller start this method returns the request to be processed and delet the request of the list///////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function chickCallButton() {
+
+          
+          
+           var list = new Array();
+           var callButton=callButtonList[0];
+           
+            
+         for(i=0; i < callButtonList.length-1 ; i++){
+             list[i]=callButtonList[i+1];
+            
+
+         }
+        
+        callButtonList=list;
+      
+        return callButton;
+          
+ };  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////this method return the best position between two elevators//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ function bestPosition(callButton) {
+
+   var poselevator1 = callButton.val()-elevator1.Floor;
+
+   var poselevator2 = callButton.val()-elevator2.Floor;
+
+   if(poselevator1 < 0){ poselevator1 = poselevator1* (-1);}
+
+   if(poselevator2 < 0){ poselevator2 = poselevator2* (-1);}
+
+   var pos = poselevator2 - poselevator1;
+
+   if(pos > 0){ return 2;}else{return 1;}
+
+           
+ };
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////this method return elevator that will process a request/////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function searchElevator (callButton) {
+
+               ////////////callbutton.text this is the request direction/////////////
+                 
+              var direction = callButton.text();
+                  
+              
+            
+            
+             if(direction.localeCompare("UP")){
+                 
+                    if (elevator1.direction ==="UP" && elevator2.direction ==="UP" && callButton.val() >= elevator1.Floor && callButton.val() >= elevator2.Floor){
+                          
+                           var scoreElevator1;
+                           var scoreElevator2;
+                             //////////////////////////////chalange with two elevator///////////////
+
+                          if (bestPosition(callButton)===1) {
+
+                             scoreElevator1++;
+                            
+
+                          }else{ 
+                            
+                                scoreElevator2++; 
+                          }
+                          
+                          //the lenght OF elevator1.ArrayDestination < the lenght of elevator2.ArrayDestination
+                          if   (elevator1.ArrayDestination.length <  elevator1.ArrayDestination.length){
+                                
+                            scoreElevator1++;
+                           
+
+                          }else{
+                            
+                            scoreElevator2 ++;
+                          }
+                             
+
+                           
+                             
+
+                          if (scoreElevator1 > scoreElevator2){
+                          
+
+                            return 1;
+                          } 
+                             
+                          else{
+                           
+                             return 2;
+                          
+                        } 
+
+                         
+
+                    }
+                      
+                   
+
+                     if (direction.localeCompare(elevator2.direction) && callButton.val() >= elevator1.Floor) {
+
+                               return 1;
+                     }
+
+                     if (direction.localeCompare(elevator2.direction) && callButton.val() >= elevator2.Floor) {
+
+                         return 1;
+                        }
+                          
+                      } 
+
+                      
+          if(direction.localeCompare("DOWN")){
+
+           if (elevator1.direction === "DOWN" && elevator2.direction  === "DOWN" && callButton.val() >= elevator1.Floor && callButton.val() >= elevator2.Floor){
+                           var scoreElevator1;
+                           var scoreElevator2;
+                          if (bestPosition(callButton)===1) {
+                             scoreElevator1++;
+
+                          }else{ 
+                                scoreElevator2++; 
+                          }
+                          
+                          //the lenght OF elevator1.ArrayDestination < the lenght of elevator2.ArrayDestination
+                          if   (elevator1.ArrayDestination.length <  elevator1.ArrayDestination.length){
+                                
+                            scoreElevator1++;
+
+                          }else{
+                            scoreElevator2 ++;
+                          }
+                             
+
+                           
+                             
+
+                          if (scoreElevator1 > scoreElevator2){
+
+                            return 1;
+                          } 
+                             
+                          else{
+                             return 2;
+                          
+                        } 
+
+                         
+
+                    }
+
+
+                     if (direction.localeCompare(elevator1.direction)  && callButton.val() <= elevator1.Floor) {
+
+                               return 1;
+                     }
+
+                     if (direction.localeCompare(elevator2.direction)  && callButton.val() <= elevator2.Floor) {
+
+                         return 1;
+                        }
+               
+               }
+               return startElevator(callButtonList)
+        
+
+    
+};
+
+
+
+
+
+function openDoor(elevator){
+                 if(elevator.direction=="UP"){
+
+                   
+
+                 }else if(elevator.direction=="DOWN"){
+                   
+
+
+                 }
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+/////////////////////////////////////////////start Elevator//////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ startElevator = function(elevator){
+  var i = 0;
+  
+ 
+ 
+  while(i < elevator.ArrayDestination.length){
+      
+        
+        elevator.move(elevator.ArrayDestination[i]);
+        elevator.stop(elevator.ArrayDestination[i].floor);
+        elevator.openDoor(elevator);
+         
+        ////////////callfor go up or down but press destination number is wrong/////////
+         
+            /*if(elevator.direction){
+  /////floorRequestcallButtons[elevator.ArrayDestination[i].floor].status is on  and  floorRequestcallButtons[elevator.ArrayDestination[i].floor].floor > floorRequestcallButtons[elevator.ArrayDestination[i].floor].destination                   
+              if () then
+
+                         addByOrder floorRequestcallButtons.destination TO  elevator.ArrayDestination
+                         call refreshfloorRequestCallButtons with elevator.ArrayDestination[i].floor
+                    endif
+                  }
+              down :
+                  if floorRequestcallButtons[elevator.ArrayDestination[i].floor].status is on  and  floorRequestcallButtons[elevator.ArrayDestination[i].floor].floor < floorRequestcallButtons[elevator.ArrayDestination[i].floor].destination then
+
+                         addByOrder floorRequestcallButtons.destination TO  elevator.ArrayDestination
+                         call refreshfloorRequestCallButtons with elevator.ArrayDestination[i].floor
+                  endif
+
+
+          endcase
+
+        call clooseDoor
+        increment i
+        
+      }
+
+      call refreshElevator with elevator*/
+      i++;
+
+    }
+  }
+
+   
+        
+       
+   
+
+
+
+
+
+
+
+
+
+ function controllerRequest() {
+          
+          
+           
+           
+                  //call checkcallButton RETURNING callButton
+                          var  callbutton = chickCallButton();
+                  
+                  //CALL searchElevator with callButton RETURNING elevator
+                          var elevator=searchElevator (callbutton);
+                          console.log("floor call button  :   "+ callbutton.val());
+                          console.log("elevator nembre finded  :   "+ elevator);
+                 // addByOrder callButton.floor to elevator.ArrayDestination
+                         if(elevator == 1){elevator1.addByOrder(callbutton.val());}
+                         if(elevator == 2){elevator2.addByOrder(callbutton.val());}
+                         var i = 0;
+                         var j = 0;
+                        console.log("list distination of elevator2 :  ")
+                         while(i < elevator2.ArrayDestination.length){
+
+                          console.log(elevator2.ArrayDestination[i]);
+                          i++;
+                         }
+                         console.log("list distination of elevator1 :  ");
+                         while(j < elevator1.ArrayDestination.length){
+
+                          console.log(elevator1.ArrayDestination[j])
+                                 j++;
+                                    }
+                                
+                         
+                              //////////////////////////start elevator ///////////
+                                    //startElevator(elevator1);
+                                    //startElevator(elevator2);
+
+           
+           
+               
+            
+};
+
+
+
+
+
+
+
+
+     </script>
+
+
+
+
+    </body>
+    </html>
